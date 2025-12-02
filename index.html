@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF--T" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistema de Controle de Procedimentos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://aistudiocdn.com/react-tooltip@^5.27.0/dist/react-tooltip.css" />
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              'primary': {
+                '50': 'rgb(var(--color-primary-50) / <alpha-value>)',
+                '100': 'rgb(var(--color-primary-100) / <alpha-value>)',
+                '200': 'rgb(var(--color-primary-200) / <alpha-value>)',
+                '300': 'rgb(var(--color-primary-300) / <alpha-value>)',
+                '400': 'rgb(var(--color-primary-400) / <alpha-value>)',
+                '500': 'rgb(var(--color-primary-500) / <alpha-value>)',
+                '600': 'rgb(var(--color-primary-600) / <alpha-value>)',
+                '700': 'rgb(var(--color-primary-700) / <alpha-value>)',
+                '800': 'rgb(var(--color-primary-800) / <alpha-value>)',
+                '900': 'rgb(var(--color-primary-900) / <alpha-value>)',
+                '950': 'rgb(var(--color-primary-950) / <alpha-value>)',
+              },
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      :root, html[data-theme="classic"] {
+        --color-primary-50: 239 246 255; /* blue-50 */
+        --color-primary-100: 219 234 254; /* blue-100 */
+        --color-primary-200: 191 219 254; /* blue-200 */
+        --color-primary-300: 147 197 253; /* blue-300 */
+        --color-primary-400: 96 165 250; /* blue-400 */
+        --color-primary-500: 59 130 246; /* blue-500 */
+        --color-primary-600: 37 99 235; /* blue-600 */
+        --color-primary-700: 29 78 216; /* blue-700 */
+        --color-primary-800: 30 64 175; /* blue-800 */
+        --color-primary-900: 30 58 138; /* blue-900 */
+        --color-primary-950: 23 37 84; /* blue-950 */
+      }
+      html[data-theme="corporate"] {
+        --color-primary-50: 240 249 255; /* sky-50 */
+        --color-primary-100: 224 242 254; /* sky-100 */
+        --color-primary-200: 186 230 253; /* sky-200 */
+        --color-primary-300: 125 211 252; /* sky-300 */
+        --color-primary-400: 56 189 248; /* sky-400 */
+        --color-primary-500: 14 165 233; /* sky-500 */
+        --color-primary-600: 2 132 199; /* sky-600 */
+        --color-primary-700: 3 105 161; /* sky-700 */
+        --color-primary-800: 7 89 133; /* sky-800 */
+        --color-primary-900: 12 74 110; /* sky-900 */
+        --color-primary-950: 8 51 68; /* sky-950 */
+      }
+      html[data-theme="vibrant"] {
+        --color-primary-50: 255 250 245; /* orange-50 */
+        --color-primary-100: 255 247 237; /* orange-100 */
+        --color-primary-200: 254 226 201; /* orange-200 */
+        --color-primary-300: 253 192 147; /* orange-300 */
+        --color-primary-400: 251 146 60; /* orange-400 */
+        --color-primary-500: 249 115 22; /* orange-500 */
+        --color-primary-600: 234 88 12; /* orange-600 */
+        --color-primary-700: 194 65 12; /* orange-700 */
+        --color-primary-800: 154 52 18; /* orange-800 */
+        --color-primary-900: 124 45 18; /* orange-900 */
+        --color-primary-950: 69 22 8; /* orange-950 */
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "recharts": "https://aistudiocdn.com/recharts@^2.12.7",
+    "prop-types": "https://aistudiocdn.com/prop-types@^15.8.1",
+    "jspdf": "https://aistudiocdn.com/jspdf@^2.5.1",
+    "jspdf-autotable": "https://aistudiocdn.com/jspdf-autotable@^3.8.2",
+    "react-tooltip": "https://aistudiocdn.com/react-tooltip@^5.27.0"
+  }
+}
+</script>
+</head>
+  <body class="bg-gray-50 dark:bg-gray-900">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
