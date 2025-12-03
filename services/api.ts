@@ -24,6 +24,8 @@ class ApiService {
       await this.delay();
       const stored = localStorage.getItem('procedures_data');
       if (stored) return JSON.parse(stored);
+      // Se não houver dados, salva os iniciais
+      localStorage.setItem('procedures_data', JSON.stringify(INITIAL_DATA));
       return INITIAL_DATA;
     }
   }
@@ -74,13 +76,18 @@ class ApiService {
 
   async login(username: string, pass: string): Promise<User | null> {
     if (USE_PHP_BACKEND) {
-        const response = await fetch(`${API_URL}?endpoint=login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password: pass })
-        });
-        const data = await response.json();
-        return data.success ? data.user : null;
+        try {
+            const response = await fetch(`${API_URL}?endpoint=login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password: pass })
+            });
+            const data = await response.json();
+            return data.success ? data.user : null;
+        } catch (e) {
+            console.error("Erro no login PHP:", e);
+            return null;
+        }
     } else {
         await this.delay();
         const users = await this.getUsers();
@@ -89,25 +96,50 @@ class ApiService {
   }
 
   async getUsers(): Promise<User[]> {
-      // Simples mock para usuários, mesmo no modo PHP para simplificar este exemplo
-      await this.delay();
-      const stored = localStorage.getItem('users_data');
-      if (stored) return JSON.parse(stored);
-      return INITIAL_USERS;
+    if (USE_PHP_BACKEND) {
+        try {
+            const response = await fetch(`${API_URL}?endpoint=users`);
+            if (!response.ok) throw new Error('Erro ao buscar usuários PHP');
+            return await response.json();
+        } catch (e) {
+             console.error("Erro ao buscar usuários", e);
+             return [];
+        }
+    } else {
+        await this.delay();
+        const stored = localStorage.getItem('users_data');
+        if (stored) return JSON.parse(stored);
+        localStorage.setItem('users_data', JSON.stringify(INITIAL_USERS));
+        return INITIAL_USERS;
+    }
   }
 
   async createUser(user: User): Promise<void> {
-      await this.delay();
-      const users = await this.getUsers();
-      const updated = [...users, user];
-      localStorage.setItem('users_data', JSON.stringify(updated));
+      if (USE_PHP_BACKEND) {
+        await fetch(`${API_URL}?endpoint=users`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(user)
+        });
+      } else {
+        await this.delay();
+        const users = await this.getUsers();
+        const updated = [...users, user];
+        localStorage.setItem('users_data', JSON.stringify(updated));
+      }
   }
 
   async deleteUser(id: string): Promise<void> {
-      await this.delay();
-      const users = await this.getUsers();
-      const updated = users.filter(u => u.id !== id);
-      localStorage.setItem('users_data', JSON.stringify(updated));
+      if (USE_PHP_BACKEND) {
+        await fetch(`${API_URL}?endpoint=users&id=${id}`, {
+            method: 'DELETE'
+        });
+      } else {
+        await this.delay();
+        const users = await this.getUsers();
+        const updated = users.filter(u => u.id !== id);
+        localStorage.setItem('users_data', JSON.stringify(updated));
+      }
   }
 
   // Helper

@@ -155,73 +155,58 @@ const ProcedureTable: React.FC<ProcedureTableProps> = ({ procedures, onEdit, onD
         ) : (
           <div className="divide-y divide-gray-200 dark:divide-gray-700">
             {procedures.map((proc) => (
-              <div key={proc.id} className="p-4 space-y-3">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <p className="font-semibold text-primary-600 dark:text-primary-400 break-words">{proc.procedureName}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{formatDate(proc.date)}</p>
+              <div key={proc.id} className="p-3 space-y-3">
+                <div className="flex justify-between items-start gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-primary-600 dark:text-primary-400 break-words leading-tight">{proc.procedureName}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{formatDate(proc.date)}</p>
                   </div>
-                  <div className="flex items-center space-x-3 ml-2 flex-shrink-0">
-                    <button onClick={() => onEdit(proc)} className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 transition-colors">
+                  <div className="flex items-center space-x-2 flex-shrink-0">
+                    <button onClick={() => onEdit(proc)} className="p-1 text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 transition-colors">
                       <EditIcon className="w-5 h-5" />
                     </button>
                     {currentUserRole === 'admin' && (
-                      <button onClick={() => onDelete(proc.id)} className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition-colors">
+                      <button onClick={() => onDelete(proc.id)} className="p-1 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition-colors">
                         <TrashIcon className="w-5 h-5" />
                       </button>
                     )}
                   </div>
                 </div>
 
-                <div className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
-                    <p className="break-words">{proc.hospitalUnit}</p>
+                <div className="text-sm text-gray-700 dark:text-gray-300 space-y-0.5">
+                    <p className="break-words leading-tight">{proc.hospitalUnit}</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">{proc.region} - {proc.state}</p>
                 </div>
                 
-                <div className="grid grid-cols-3 gap-2 text-center text-xs pt-2 border-t border-gray-200 dark:border-gray-700">
+                <div className="grid grid-cols-3 gap-1 text-center text-xs pt-2 border-t border-gray-200 dark:border-gray-700">
                     <div>
-                        <span className="text-gray-500 dark:text-gray-400 block">Realizados</span>
+                        <span className="text-[10px] uppercase text-gray-500 dark:text-gray-400 block mb-0.5">Realizados</span>
                         <span className="font-medium text-gray-800 dark:text-gray-200">{proc.qtyPerformed.toLocaleString('pt-BR')}</span>
                     </div>
                     <div>
-                        <span className="text-gray-500 dark:text-gray-400 block">Faturados</span>
+                        <span className="text-[10px] uppercase text-gray-500 dark:text-gray-400 block mb-0.5">Faturados</span>
                         <span className="font-medium text-gray-800 dark:text-gray-200">{proc.qtyBilled.toLocaleString('pt-BR')}</span>
                     </div>
                     <div>
-                        <span className="text-gray-500 dark:text-gray-400 block">Pagos</span>
+                        <span className="text-[10px] uppercase text-gray-500 dark:text-gray-400 block mb-0.5">Pagos</span>
                         <span className="font-medium text-gray-800 dark:text-gray-200">{proc.qtyPaid.toLocaleString('pt-BR')}</span>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 text-center text-sm pt-2">
+                <div className="grid grid-cols-3 gap-1 text-center text-xs pt-2">
                      <div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 block">Vlr. Realizado</span>
+                        <span className="text-[10px] uppercase text-gray-500 dark:text-gray-400 block mb-0.5">Vlr. Realizado</span>
                         <span className="font-semibold text-green-600 dark:text-green-400">{formatCurrency(proc.valuePerformed)}</span>
                     </div>
                     <div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 block">Vlr. Faturado</span>
+                        <span className="text-[10px] uppercase text-gray-500 dark:text-gray-400 block mb-0.5">Vlr. Faturado</span>
                         <span className="font-semibold text-blue-600 dark:text-blue-400">{formatCurrency(proc.valueBilled)}</span>
                     </div>
                     <div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 block">Vlr. Pago</span>
+                        <span className="text-[10px] uppercase text-gray-500 dark:text-gray-400 block mb-0.5">Vlr. Pago</span>
                         <span className="font-semibold text-purple-600 dark:text-purple-400">{formatCurrency(proc.valuePaid)}</span>
                     </div>
                 </div>
-                
-                {/* Audit Trail for Mobile */}
-                {(proc.createdBy || proc.lastModifiedBy) && (
-                   <div className="pt-2 mt-2 border-t border-gray-100 dark:border-gray-700/50 text-xs flex flex-col gap-1 text-gray-500">
-                     <div className="flex justify-between items-center">
-                        <span>Registrado por: <span className="font-medium text-gray-700 dark:text-gray-300">{proc.createdBy || '-'}</span></span>
-                     </div>
-                     {proc.lastModifiedBy && proc.lastModifiedBy !== proc.createdBy && (
-                        <div className="flex justify-between items-center">
-                           <span>Última alt: <span className="font-medium text-gray-700 dark:text-gray-300">{proc.lastModifiedBy}</span></span>
-                           <span className="text-[10px]">{formatDateTime(proc.lastModifiedAt)}</span>
-                        </div>
-                     )}
-                   </div>
-                )}
               </div>
             ))}
           </div>

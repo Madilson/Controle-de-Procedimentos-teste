@@ -87,7 +87,7 @@ const App: React.FC = () => {
           setUsersList(userData);
       } catch (error) {
           console.error("Erro ao carregar dados:", error);
-          alert("Erro ao carregar dados do sistema.");
+          alert("Erro ao carregar dados do sistema. Verifique a conexão.");
       } finally {
           setIsLoading(false);
       }
@@ -515,8 +515,8 @@ const handleExportCSV = () => {
   };
 
 
-  const commonInputClass = "w-full sm:w-auto px-3 py-2 text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500";
-  const commonButtonClass = "flex-shrink-0 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-300";
+  const commonInputClass = "w-full px-3 py-2 text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500";
+  const commonButtonClass = "flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-300";
 
   if (!currentUser) {
     return <LoginScreen onLogin={handleLogin} companyLogo={companyLogo} />;
@@ -531,7 +531,7 @@ const handleExportCSV = () => {
                 <span className="hidden sm:inline">Bem-vindo,</span>
                 <span className="font-medium text-gray-900 dark:text-white flex items-center gap-1">
                     <UserIcon className="w-4 h-4" />
-                    {currentUser.name} ({currentUser.role === 'admin' ? 'Admin' : 'Usuário'})
+                    {currentUser.name}
                 </span>
              </div>
              <div className="flex items-center gap-3">
@@ -539,17 +539,17 @@ const handleExportCSV = () => {
                   <>
                     <button 
                         onClick={() => setIsSettingsModalOpen(true)}
-                        className="text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 flex items-center gap-1"
+                        className="p-1 text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 flex items-center gap-1"
                         title="Configurações do Sistema"
                     >
-                        <CogIcon className="w-4 h-4" />
+                        <CogIcon className="w-5 h-5" />
                     </button>
                     <div className="h-4 w-px bg-gray-300 dark:bg-gray-600 mx-1"></div>
                     <button 
                         onClick={() => setIsUserModalOpen(true)}
                         className="text-sm text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 flex items-center gap-1"
                     >
-                        <UsersIcon className="w-4 h-4" /> <span className="hidden sm:inline">Usuários</span>
+                        <UsersIcon className="w-5 h-5" /> <span className="hidden sm:inline">Usuários</span>
                     </button>
                     <div className="h-4 w-px bg-gray-300 dark:bg-gray-600 mx-1"></div>
                   </>
@@ -558,25 +558,25 @@ const handleExportCSV = () => {
                     onClick={handleLogout}
                     className="text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 flex items-center gap-1"
                 >
-                    <LogoutIcon className="w-4 h-4" /> Sair
+                    <LogoutIcon className="w-5 h-5" /> <span className="hidden sm:inline">Sair</span>
                 </button>
              </div>
           </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-          <div>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+          <div className="w-full md:w-auto">
               {companyLogo ? (
-                  <img src={companyLogo} alt="Logo" className="h-12 object-contain" />
+                  <img src={companyLogo} alt="Logo" className="h-10 md:h-12 object-contain" />
               ) : (
                   <>
-                    <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Sistema de Controle</h1>
-                    <p className="mt-1 text-md text-gray-500 dark:text-gray-400">Gerencie e visualize os dados dos procedimentos.</p>
+                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Sistema de Controle</h1>
+                    <p className="mt-1 text-sm md:text-base text-gray-500 dark:text-gray-400">Gerencie e visualize os dados dos procedimentos.</p>
                   </>
               )}
           </div>
-           <div className="flex items-center gap-4 w-full md:w-auto justify-end">
+           <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
               <div className="relative">
                 <button
                   onClick={() => setIsThemeDropdownOpen(!isThemeDropdownOpen)}
@@ -608,10 +608,10 @@ const handleExportCSV = () => {
               </div>
               <button
                 onClick={handleAddNew}
-                className={`${commonButtonClass} bg-primary-600 hover:bg-primary-700 focus:ring-primary-500`}
+                className={`${commonButtonClass} w-full md:w-auto bg-primary-600 hover:bg-primary-700 focus:ring-primary-500 justify-center`}
               >
                 <PlusIcon className="w-5 h-5" />
-                <span className="hidden sm:inline">Adicionar Procedimento</span>
+                <span>Adicionar <span className="hidden sm:inline">Procedimento</span></span>
               </button>
             </div>
         </header>
@@ -635,13 +635,13 @@ const handleExportCSV = () => {
             </div>
         ) : (
             <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                    <DashboardCard title="Total Realizado" value={formatCurrency(dashboardStats.totalValuePerformed)} icon={<span className="text-xl font-bold">R</span>} colorClass="bg-green-100 text-green-600" />
-                    <DashboardCard title="Total Faturado" value={formatCurrency(dashboardStats.totalValueBilled)} icon={<span className="text-xl font-bold">F</span>} colorClass="bg-blue-100 text-blue-600" />
-                    <DashboardCard title="Total Pago" value={formatCurrency(dashboardStats.totalValuePaid)} icon={<span className="text-xl font-bold">P</span>} colorClass="bg-purple-100 text-purple-600" />
-                    <DashboardCard title="Qtd. Realizados" value={formatNumber(dashboardStats.totalQtyPerformed)} icon={<span className="text-xl">🛠️</span>} colorClass="bg-yellow-100 text-yellow-600" />
-                    <DashboardCard title="Qtd. Faturados" value={formatNumber(dashboardStats.totalQtyBilled)} icon={<span className="text-xl">📊</span>} colorClass="bg-indigo-100 text-indigo-600" />
-                    <DashboardCard title="Qtd. Pagos" value={formatNumber(dashboardStats.totalQtyPaid)} icon={<span className="text-xl">✅</span>} colorClass="bg-pink-100 text-pink-600" />
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 mb-6 md:mb-8">
+                    <DashboardCard title="Total Realizado" value={formatCurrency(dashboardStats.totalValuePerformed)} icon={<span className="text-lg md:text-xl font-bold">R</span>} colorClass="bg-green-100 text-green-600" />
+                    <DashboardCard title="Total Faturado" value={formatCurrency(dashboardStats.totalValueBilled)} icon={<span className="text-lg md:text-xl font-bold">F</span>} colorClass="bg-blue-100 text-blue-600" />
+                    <DashboardCard title="Total Pago" value={formatCurrency(dashboardStats.totalValuePaid)} icon={<span className="text-lg md:text-xl font-bold">P</span>} colorClass="bg-purple-100 text-purple-600" />
+                    <DashboardCard title="Qtd. Realizados" value={formatNumber(dashboardStats.totalQtyPerformed)} icon={<span className="text-lg md:text-xl">🛠️</span>} colorClass="bg-yellow-100 text-yellow-600" />
+                    <DashboardCard title="Qtd. Faturados" value={formatNumber(dashboardStats.totalQtyBilled)} icon={<span className="text-lg md:text-xl">📊</span>} colorClass="bg-indigo-100 text-indigo-600" />
+                    <DashboardCard title="Qtd. Pagos" value={formatNumber(dashboardStats.totalQtyPaid)} icon={<span className="text-lg md:text-xl">✅</span>} colorClass="bg-pink-100 text-pink-600" />
                 </div>
 
                 {/* Charts Section */}
@@ -655,16 +655,16 @@ const handleExportCSV = () => {
                     className="flex justify-between items-center w-full p-4"
                     aria-expanded={isFiltersOpen}
                     >
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Filtros e Opções</h2>
+                    <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white">Filtros e Opções</h2>
                     <ChevronDownIcon className={`w-6 h-6 text-gray-500 dark:text-gray-400 transform transition-transform duration-300 ${isFiltersOpen ? 'rotate-180' : ''}`} />
                     </button>
 
                     {isFiltersOpen && (
                     <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mb-4">
                         <input
                             type="text"
-                            placeholder="Buscar por palavra-chave..."
+                            placeholder="Buscar..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className={commonInputClass}
@@ -690,23 +690,23 @@ const handleExportCSV = () => {
                             {uniqueCreators.map(creator => <option key={creator} value={creator}>{creator}</option>)}
                         </select>
                         <div className="flex items-center gap-2">
-                            <label htmlFor="startDate" className="text-sm font-medium text-gray-700 dark:text-gray-300">De:</label>
+                            <label htmlFor="startDate" className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">De:</label>
                             <input type="date" id="startDate" value={startDate} onChange={(e) => setStartDate(e.target.value)} className={commonInputClass} />
                         </div>
                         <div className="flex items-center gap-2">
-                            <label htmlFor="endDate" className="text-sm font-medium text-gray-700 dark:text-gray-300">Até:</label>
+                            <label htmlFor="endDate" className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Até:</label>
                             <input type="date" id="endDate" value={endDate} onChange={(e) => setEndDate(e.target.value)} className={commonInputClass} />
                         </div>
                         </div>
-                        <div className="flex flex-wrap items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-                            <button onClick={handleExportExcel} className={`${commonButtonClass} bg-green-600 hover:bg-green-700 focus:ring-green-500`}>
-                            <ExcelIcon className="w-5 h-5" /> <span className="hidden sm:inline">Excel</span>
+                        <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <button onClick={handleExportExcel} className={`${commonButtonClass} w-full sm:w-auto bg-green-600 hover:bg-green-700 focus:ring-green-500`}>
+                            <ExcelIcon className="w-5 h-5" /> <span>Excel</span>
                             </button>
-                            <button onClick={handleExportCSV} className={`${commonButtonClass} bg-orange-500 hover:bg-orange-600 focus:ring-orange-500`}>
-                            <CsvIcon className="w-5 h-5" /> <span className="hidden sm:inline">CSV</span>
+                            <button onClick={handleExportCSV} className={`${commonButtonClass} w-full sm:w-auto bg-orange-500 hover:bg-orange-600 focus:ring-orange-500`}>
+                            <CsvIcon className="w-5 h-5" /> <span>CSV</span>
                             </button>
-                            <button onClick={handleExportPDF} className={`${commonButtonClass} bg-red-600 hover:bg-red-700 focus:ring-red-500`}>
-                            <PdfIcon className="w-5 h-5" /> <span className="hidden sm:inline">PDF</span>
+                            <button onClick={handleExportPDF} className={`${commonButtonClass} w-full sm:w-auto bg-red-600 hover:bg-red-700 focus:ring-red-500`}>
+                            <PdfIcon className="w-5 h-5" /> <span>PDF</span>
                             </button>
                         </div>
                     </div>
