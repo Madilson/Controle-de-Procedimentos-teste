@@ -119,6 +119,11 @@ const App: React.FC = () => {
     setUsersList(await api.getUsers()); // Refresh list
   };
 
+  const handleUpdateUser = async (user: User) => {
+    await api.updateUser(user);
+    setUsersList(await api.getUsers()); // Refresh list
+  };
+
   const handleDeleteUser = async (id: string) => {
     await api.deleteUser(id);
     setUsersList(await api.getUsers()); // Refresh list
@@ -750,6 +755,7 @@ const handleExportCSV = () => {
         users={usersList}
         onCreateUser={handleCreateUser}
         onDeleteUser={handleDeleteUser}
+        onUpdateUser={handleUpdateUser}
         currentUserId={currentUser.id}
       />
 

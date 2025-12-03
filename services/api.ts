@@ -131,6 +131,21 @@ class ApiService {
       }
   }
 
+  async updateUser(user: User): Promise<void> {
+    if (USE_PHP_BACKEND) {
+        await fetch(`${API_URL}?endpoint=users`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(user)
+        });
+    } else {
+        await this.delay();
+        const users = await this.getUsers();
+        const updated = users.map(u => u.id === user.id ? user : u);
+        localStorage.setItem('users_data', JSON.stringify(updated));
+    }
+  }
+
   async deleteUser(id: string): Promise<void> {
       if (USE_PHP_BACKEND) {
         await fetch(`${API_URL}?endpoint=users&id=${id}`, {

@@ -3,6 +3,7 @@ import { User, Role } from '../types';
 import TrashIcon from './icons/TrashIcon';
 import PlusIcon from './icons/PlusIcon';
 import UserIcon from './icons/UserIcon';
+import KeyIcon from './icons/KeyIcon';
 
 interface UserManagementModalProps {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface UserManagementModalProps {
   users: User[];
   onCreateUser: (user: Omit<User, 'id'>) => void;
   onDeleteUser: (id: string) => void;
+  onUpdateUser: (user: User) => void;
   currentUserId: string;
 }
 
@@ -19,6 +21,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
   users,
   onCreateUser,
   onDeleteUser,
+  onUpdateUser,
   currentUserId
 }) => {
   const [newUser, setNewUser] = useState({
@@ -28,6 +31,10 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
     role: 'user' as Role
   });
   const [error, setError] = useState('');
+  
+  // States for password changing
+  const [editingPasswordId, setEditingPasswordId] = useState<string | null>(null);
+  const [newPassword, setNewPassword] = useState('');
 
   if (!isOpen) return null;
 
@@ -45,6 +52,26 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
     onCreateUser(newUser);
     setNewUser({ username: '', password: '', name: '', role: 'user' });
     setError('');
+  };
+
+  const startEditingPassword = (id: string) => {
+    setEditingPasswordId(id);
+    setNewPassword('');
+  };
+
+  const cancelEditingPassword = () => {
+    setEditingPasswordId(null);
+    setNewPassword('');
+  };
+
+  const saveNewPassword = (user: User) => {
+    if (!newPassword.trim()) {
+        alert("A senha não pode estar vazia.");
+        return;
+    }
+    onUpdateUser({ ...user, password: newPassword });
+    setEditingPasswordId(null);
+    setNewPassword('');
   };
 
   return (
@@ -129,7 +156,10 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {users.map((user) => (
                   <tr key={user.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{user.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                        {user.name} 
+                        {user.id === currentUserId && <span className="ml-2 text-xs text-primary-600 dark:text-primary-400 font-normal">(Você)</span>}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{user.username}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -139,13 +169,35 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      {user.id !== currentUserId ? (
-                         <button onClick={() => onDeleteUser(user.id)} className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
-                           <TrashIcon className="w-5 h-5" />
-                         </button>
-                      ) : (
-                        <span className="text-xs text-gray-400 italic">Atual</span>
-                      )}
+                      <div className="flex justify-end items-center space-x-2">
+                        {editingPasswordId === user.id ? (
+                            <div className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-700 p-1 rounded">
+                                <input 
+                                    type="text" 
+                                    placeholder="Nova senha" 
+                                    className="w-24 text-xs px-2 py-1 rounded border border-gray-300 dark:border-gray-500 dark:bg-gray-600 dark:text-white"
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                />
+                                <button onClick={() => saveNewPassword(user)} className="text-green-600 hover:text-green-800 text-xs font-bold">OK</button>
+                                <button onClick={cancelEditingPassword} className="text-red-600 hover:text-red-800 text-xs">X</button>
+                            </div>
+                        ) : (
+                             <button 
+                                onClick={() => startEditingPassword(user.id)} 
+                                className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                                title="Alterar Senha"
+                             >
+                                <KeyIcon className="w-5 h-5" />
+                             </button>
+                        )}
+
+                        {user.id !== currentUserId && (
+                             <button onClick={() => onDeleteUser(user.id)} className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300" title="Excluir Usuário">
+                               <TrashIcon className="w-5 h-5" />
+                             </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
