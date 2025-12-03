@@ -635,7 +635,7 @@ const handleExportCSV = () => {
             </div>
         ) : (
             <>
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 mb-6 md:mb-8">
+                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 mb-6 md:mb-8">
                     <DashboardCard title="Total Realizado" value={formatCurrency(dashboardStats.totalValuePerformed)} icon={<span className="text-lg md:text-xl font-bold">R</span>} colorClass="bg-green-100 text-green-600" />
                     <DashboardCard title="Total Faturado" value={formatCurrency(dashboardStats.totalValueBilled)} icon={<span className="text-lg md:text-xl font-bold">F</span>} colorClass="bg-blue-100 text-blue-600" />
                     <DashboardCard title="Total Pago" value={formatCurrency(dashboardStats.totalValuePaid)} icon={<span className="text-lg md:text-xl font-bold">P</span>} colorClass="bg-purple-100 text-purple-600" />

@@ -1,14 +1,14 @@
 import { Procedure, User } from '../types';
 import { INITIAL_DATA, INITIAL_USERS } from '../constants';
 
-// CONFIGURAÇÃO:
-// Mude para 'true' se você hospedar o arquivo 'api.php' em um servidor PHP (XAMPP, Apache, etc).
-// Mude para 'false' para usar o modo de demonstração local (localStorage).
-const USE_PHP_BACKEND = false;
+// --- CONFIGURAÇÃO ---
+// Defina como true para conectar ao backend PHP
+export const USE_PHP_BACKEND = false; 
+
+// URL do Backend (ajuste conforme seu servidor local ou produção)
 const API_URL = 'http://localhost/sistema-controle/api.php'; 
 
-// Simulação de delay de rede para parecer uma aplicação real
-const NETWORK_DELAY = 600;
+const NETWORK_DELAY = 600; // Delay simulado para modo LocalStorage
 
 class ApiService {
   
@@ -16,15 +16,19 @@ class ApiService {
 
   async getProcedures(): Promise<Procedure[]> {
     if (USE_PHP_BACKEND) {
-      const response = await fetch(`${API_URL}?endpoint=procedures`);
-      if (!response.ok) throw new Error('Erro ao buscar dados do PHP');
-      return await response.json();
+      try {
+          const response = await fetch(`${API_URL}?endpoint=procedures`);
+          if (!response.ok) throw new Error('Falha na comunicação com API');
+          return await response.json();
+      } catch (error) {
+          console.error("Erro API PHP:", error);
+          // Fallback silencioso ou relançar erro dependendo da estratégia
+          throw error;
+      }
     } else {
-      // Modo Mock (Local)
       await this.delay();
       const stored = localStorage.getItem('procedures_data');
       if (stored) return JSON.parse(stored);
-      // Se não houver dados, salva os iniciais
       localStorage.setItem('procedures_data', JSON.stringify(INITIAL_DATA));
       return INITIAL_DATA;
     }
@@ -37,10 +41,9 @@ class ApiService {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(procedure)
       });
-      if (!response.ok) throw new Error('Erro ao salvar no PHP');
+      if (!response.ok) throw new Error('Erro ao salvar procedimento');
       return await response.json();
     } else {
-      // Modo Mock (Local)
       await this.delay();
       const stored = await this.getProcedures();
       let updatedList;
@@ -62,9 +65,8 @@ class ApiService {
         const response = await fetch(`${API_URL}?endpoint=procedures&id=${id}`, {
             method: 'DELETE',
         });
-        if (!response.ok) throw new Error('Erro ao excluir no PHP');
+        if (!response.ok) throw new Error('Erro ao excluir procedimento');
     } else {
-        // Modo Mock (Local)
         await this.delay();
         const stored = await this.getProcedures();
         const updatedList = stored.filter(p => p.id !== id);
@@ -99,7 +101,7 @@ class ApiService {
     if (USE_PHP_BACKEND) {
         try {
             const response = await fetch(`${API_URL}?endpoint=users`);
-            if (!response.ok) throw new Error('Erro ao buscar usuários PHP');
+            if (!response.ok) throw new Error('Erro ao buscar usuários');
             return await response.json();
         } catch (e) {
              console.error("Erro ao buscar usuários", e);
@@ -142,7 +144,6 @@ class ApiService {
       }
   }
 
-  // Helper
   private delay() {
     return new Promise(resolve => setTimeout(resolve, NETWORK_DELAY));
   }
