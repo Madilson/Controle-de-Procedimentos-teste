@@ -1,4 +1,5 @@
-export type Role = 'admin' | 'user';
+
+export type Role = 'admin' | 'user' | 'faturamento';
 
 export interface User {
   id: string;
@@ -14,6 +15,7 @@ export interface Procedure {
   region: string;
   state: string;
   hospitalUnit: string;
+  patientName: string; // New field
   procedureName: string;
   qtyPerformed: number;
   qtyBilled: number;

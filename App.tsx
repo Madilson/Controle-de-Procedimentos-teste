@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { Procedure, User } from './types';
 import { BRAZILIAN_REGIONS, BRAZILIAN_STATES } from './constants';
@@ -284,6 +285,36 @@ const App: React.FC = () => {
     } finally {
         setIsLoading(false);
     }
+  };
+
+  const handleQuickStatusUpdate = async (procedure: Procedure, type: 'billed' | 'paid', isChecked: boolean) => {
+      const userName = currentUser?.name || 'Unknown';
+      
+      const updatedProcedure: Procedure = { 
+          ...procedure,
+          lastModifiedBy: userName,
+          lastModifiedAt: new Date().toISOString()
+      };
+
+      if (type === 'billed') {
+          updatedProcedure.qtyBilled = isChecked ? 1 : 0;
+          updatedProcedure.valueBilled = isChecked ? updatedProcedure.valuePerformed : 0;
+      } else if (type === 'paid') {
+          updatedProcedure.qtyPaid = isChecked ? 1 : 0;
+          updatedProcedure.valuePaid = isChecked ? updatedProcedure.valuePerformed : 0;
+      }
+
+      // Optimistic update
+      setProcedures(prev => prev.map(p => p.id === procedure.id ? updatedProcedure : p));
+
+      try {
+          await api.saveProcedure(updatedProcedure);
+      } catch (error) {
+          console.error("Failed to update status", error);
+          alert("Erro ao atualizar status. Revertendo alteração.");
+          // Revert on failure
+          setProcedures(prev => prev.map(p => p.id === procedure.id ? procedure : p));
+      }
   };
   
   const formatCurrency = (value: number) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -723,6 +754,7 @@ const handleExportCSV = () => {
                         procedures={filteredProcedures}
                         onEdit={handleEdit}
                         onDelete={handleDelete}
+                        onStatusChange={handleQuickStatusUpdate}
                         currentUserRole={currentUser.role}
                     />
                 </div>
@@ -739,6 +771,7 @@ const handleExportCSV = () => {
         regions={uniqueRegions}
         states={uniqueStates}
         procedureNames={uniqueProcedureNames}
+        currentUserRole={currentUser.role}
       />
       
       <ConfirmationModal

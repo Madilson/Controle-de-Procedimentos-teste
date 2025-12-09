@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { User, Role } from '../types';
 import TrashIcon from './icons/TrashIcon';
@@ -74,6 +75,25 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
     setNewPassword('');
   };
 
+  const getRoleBadge = (role: Role) => {
+    switch (role) {
+      case 'admin':
+        return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
+      case 'faturamento':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+      default:
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+    }
+  };
+
+  const getRoleName = (role: Role) => {
+    switch (role) {
+      case 'admin': return 'Administrador';
+      case 'faturamento': return 'Faturamento';
+      default: return 'Usuário Padrão';
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
@@ -129,8 +149,9 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                     onChange={e => setNewUser({...newUser, role: e.target.value as Role})}
                     className="w-full px-3 py-2 text-sm border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-white"
                  >
-                     <option value="user">Usuário</option>
-                     <option value="admin">Admin</option>
+                     <option value="user">Usuário Padrão</option>
+                     <option value="faturamento">Faturamento</option>
+                     <option value="admin">Administrador</option>
                  </select>
               </div>
               <div className="md:col-span-1">
@@ -162,10 +183,8 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{user.username}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        user.role === 'admin' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                      }`}>
-                        {user.role === 'admin' ? 'Administrador' : 'Usuário'}
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getRoleBadge(user.role)}`}>
+                        {getRoleName(user.role)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

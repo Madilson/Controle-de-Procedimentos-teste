@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { Procedure } from '../types';
+import { Procedure, Role } from '../types';
 
 type ProcedureFormData = Omit<Procedure, 'id'>;
 
@@ -11,6 +12,7 @@ interface ProcedureFormModalProps {
   regions: string[];
   states: string[];
   procedureNames: string[];
+  currentUserRole: Role;
 }
 
 const initialFormState: ProcedureFormData = {
@@ -18,8 +20,9 @@ const initialFormState: ProcedureFormData = {
   region: '',
   state: '',
   hospitalUnit: '',
+  patientName: '',
   procedureName: '',
-  qtyPerformed: 0,
+  qtyPerformed: 1, // Default to 1
   qtyBilled: 0,
   qtyPaid: 0,
   valuePerformed: 0,
@@ -31,18 +34,14 @@ const initialFormState: ProcedureFormData = {
   lastModifiedAt: '',
 };
 
-const fieldLabels: Record<Exclude<keyof ProcedureFormData, 'lastModifiedBy' | 'lastModifiedAt' | 'createdBy'>, string> = {
+const fieldLabels: Record<Exclude<keyof ProcedureFormData, 'lastModifiedBy' | 'lastModifiedAt' | 'createdBy' | 'qtyPerformed' | 'qtyBilled' | 'qtyPaid' | 'valueBilled' | 'valuePaid'>, string> = {
   date: 'Data do Procedimento',
   region: 'Região',
   state: 'Estado (UF)',
   hospitalUnit: 'Unidade Hospitalar',
+  patientName: 'Nome do Paciente',
   procedureName: 'Nome do Procedimento',
-  qtyPerformed: 'Qtd. Realizados',
-  qtyBilled: 'Qtd. Faturados',
-  qtyPaid: 'Qtd. Pagos',
-  valuePerformed: 'Valor Realizado',
-  valueBilled: 'Valor Faturado',
-  valuePaid: 'Valor Pago',
+  valuePerformed: 'Valor Realizado (R$)',
 };
 
 const formatCurrencyForDisplay = (num: number): string => {
@@ -64,9 +63,16 @@ const ProcedureFormModal: React.FC<ProcedureFormModalProps> = ({
   regions,
   states,
   procedureNames,
+  currentUserRole
 }) => {
   const [formData, setFormData] = useState<ProcedureFormData>(initialFormState);
   const [errors, setErrors] = useState<Partial<Record<keyof ProcedureFormData, string>>>({});
+  
+  // Local state for checkboxes
+  const [isBilled, setIsBilled] = useState(false);
+  const [isPaid, setIsPaid] = useState(false);
+
+  const canEditStatus = currentUserRole === 'admin' || currentUserRole === 'faturamento';
 
   const validate = (data: ProcedureFormData): Partial<Record<keyof ProcedureFormData, string>> => {
     const newErrors: Partial<Record<keyof ProcedureFormData, string>> = {};
@@ -74,6 +80,7 @@ const ProcedureFormModal: React.FC<ProcedureFormModalProps> = ({
     // Required fields
     if (!data.procedureName.trim()) newErrors.procedureName = 'Este campo é obrigatório.';
     if (!data.hospitalUnit.trim()) newErrors.hospitalUnit = 'Este campo é obrigatório.';
+    if (!data.patientName.trim()) newErrors.patientName = 'Este campo é obrigatório.';
     if (!data.date) newErrors.date = 'Este campo é obrigatório.';
     if (!data.region) newErrors.region = 'Este campo é obrigatório.';
     if (!data.state) newErrors.state = 'Este campo é obrigatório.';
@@ -88,29 +95,8 @@ const ProcedureFormModal: React.FC<ProcedureFormModalProps> = ({
         }
     }
 
-    // Quantity validation
-    if (data.qtyPerformed < 0) newErrors.qtyPerformed = 'A quantidade não pode ser negativa.';
-    if (data.qtyBilled < 0) newErrors.qtyBilled = 'A quantidade faturada não pode ser negativa.';
-    if (data.qtyPaid < 0) newErrors.qtyPaid = 'A quantidade paga não pode ser negativa.';
-
-    if (data.qtyBilled > data.qtyPerformed) {
-        newErrors.qtyBilled = 'Qtd. Faturados não pode ser maior que Qtd. Realizados.';
-    }
-    if (data.qtyPaid > data.qtyBilled) {
-        newErrors.qtyPaid = 'Qtd. Pagos não pode ser maior que Qtd. Faturados.';
-    }
-
     // Value validation
     if (data.valuePerformed < 0) newErrors.valuePerformed = 'O valor não pode ser negativo.';
-    if (data.valueBilled < 0) newErrors.valueBilled = 'O valor não pode ser negativo.';
-    if (data.valuePaid < 0) newErrors.valuePaid = 'O valor não pode ser negativo.';
-
-    if (data.valueBilled > data.valuePerformed) {
-        newErrors.valueBilled = 'Valor Faturado não pode ser maior que Valor Realizado.';
-    }
-    if (data.valuePaid > data.valueBilled) {
-        newErrors.valuePaid = 'Valor Pago não pode ser maior que Valor Faturado.';
-    }
 
     return newErrors;
   };
@@ -118,8 +104,13 @@ const ProcedureFormModal: React.FC<ProcedureFormModalProps> = ({
   useEffect(() => {
     if (procedureToEdit) {
       setFormData(procedureToEdit);
+      // Initialize checkboxes based on existing data
+      setIsBilled(procedureToEdit.qtyBilled > 0);
+      setIsPaid(procedureToEdit.qtyPaid > 0);
     } else {
       setFormData(initialFormState);
+      setIsBilled(false);
+      setIsPaid(false);
     }
     setErrors({}); // Reset errors when modal opens or procedure changes
   }, [procedureToEdit, isOpen]);
@@ -136,7 +127,7 @@ const ProcedureFormModal: React.FC<ProcedureFormModalProps> = ({
         });
     }
     
-    if (name.startsWith('value')) { // valuePerformed, valueBilled, valuePaid
+    if (name === 'valuePerformed') {
       const digitsOnly = value.replace(/\D/g, '');
       if (digitsOnly === '') {
           setFormData((prev) => ({ ...prev, [name]: 0 }));
@@ -148,10 +139,9 @@ const ProcedureFormModal: React.FC<ProcedureFormModalProps> = ({
           [name]: isNaN(numberValue) ? 0 : numberValue,
       }));
     } else {
-      const isNumberInput = e.target.nodeName === 'INPUT' && (e.target as HTMLInputElement).type === 'number';
       setFormData((prev) => ({
         ...prev,
-        [name]: isNumberInput ? parseFloat(value) || 0 : value,
+        [name]: value,
       }));
     }
   };
@@ -164,7 +154,25 @@ const ProcedureFormModal: React.FC<ProcedureFormModalProps> = ({
       return;
     }
     setErrors({});
-    onSave({ ...formData, id: procedureToEdit?.id });
+    
+    // Logic for checkbox dependencies
+    // If Billed is checked: qtyBilled = 1, valueBilled = valuePerformed
+    // If Paid is checked: qtyPaid = 1, valuePaid = valuePerformed
+    
+    const dataToSave = {
+        ...formData,
+        qtyPerformed: 1, // Always adds 1
+        
+        qtyBilled: isBilled ? 1 : 0,
+        valueBilled: isBilled ? formData.valuePerformed : 0,
+
+        qtyPaid: isPaid ? 1 : 0,
+        valuePaid: isPaid ? formData.valuePerformed : 0,
+
+        id: procedureToEdit?.id 
+    };
+    
+    onSave(dataToSave);
   };
 
   if (!isOpen) return null;
@@ -183,22 +191,39 @@ const ProcedureFormModal: React.FC<ProcedureFormModalProps> = ({
         <form onSubmit={handleSubmit} noValidate>
           <div className="p-6 space-y-6">
             
-            <div>
-              <label htmlFor="procedureName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{fieldLabels.procedureName}</label>
-              <input
-                type="text"
-                id="procedureName"
-                name="procedureName"
-                value={formData.procedureName}
-                onChange={handleChange}
-                className={`${commonInputClass} ${errors.procedureName ? errorInputClass : ''}`}
-                required
-                list="procedure-names-datalist"
-              />
-              <datalist id="procedure-names-datalist">
-                {procedureNames.map(name => <option key={name} value={name} />)}
-              </datalist>
-              {errors.procedureName && <p className="mt-1 text-sm text-red-600">{errors.procedureName}</p>}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label htmlFor="procedureName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{fieldLabels.procedureName}</label>
+                  <input
+                    type="text"
+                    id="procedureName"
+                    name="procedureName"
+                    value={formData.procedureName}
+                    onChange={handleChange}
+                    className={`${commonInputClass} ${errors.procedureName ? errorInputClass : ''}`}
+                    required
+                    list="procedure-names-datalist"
+                  />
+                  <datalist id="procedure-names-datalist">
+                    {procedureNames.map(name => <option key={name} value={name} />)}
+                  </datalist>
+                  {errors.procedureName && <p className="mt-1 text-sm text-red-600">{errors.procedureName}</p>}
+                </div>
+
+                <div>
+                  <label htmlFor="patientName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{fieldLabels.patientName}</label>
+                  <input
+                    type="text"
+                    id="patientName"
+                    name="patientName"
+                    value={formData.patientName}
+                    onChange={handleChange}
+                    className={`${commonInputClass} ${errors.patientName ? errorInputClass : ''}`}
+                    required
+                    placeholder="Nome completo do paciente"
+                  />
+                  {errors.patientName && <p className="mt-1 text-sm text-red-600">{errors.patientName}</p>}
+                </div>
             </div>
 
             <div>
@@ -262,50 +287,64 @@ const ProcedureFormModal: React.FC<ProcedureFormModalProps> = ({
                 </div>
             </div>
             
-            <div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white border-t border-gray-200 dark:border-gray-700 pt-4">
-                    Quantidades
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                    Valores e Status
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
-                     <div>
-                      <label htmlFor="qtyPerformed" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{fieldLabels.qtyPerformed}</label>
-                      <input type="number" id="qtyPerformed" name="qtyPerformed" value={formData.qtyPerformed} onChange={handleChange} className={`${commonInputClass} ${errors.qtyPerformed ? errorInputClass : ''}`} required min="0" />
-                      {errors.qtyPerformed && <p className="mt-1 text-sm text-red-600">{errors.qtyPerformed}</p>}
-                    </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                     <div>
-                      <label htmlFor="qtyBilled" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{fieldLabels.qtyBilled}</label>
-                      <input type="number" id="qtyBilled" name="qtyBilled" value={formData.qtyBilled} onChange={handleChange} className={`${commonInputClass} ${errors.qtyBilled ? errorInputClass : ''}`} required min="0" />
-                      {errors.qtyBilled && <p className="mt-1 text-sm text-red-600">{errors.qtyBilled}</p>}
+                        <label htmlFor="valuePerformed" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{fieldLabels.valuePerformed}</label>
+                        <input 
+                            type="text" 
+                            inputMode="decimal" 
+                            id="valuePerformed" 
+                            name="valuePerformed" 
+                            value={formatCurrencyForDisplay(formData.valuePerformed)} 
+                            onChange={handleChange} 
+                            className={`${commonInputClass} ${errors.valuePerformed ? errorInputClass : ''} text-lg font-semibold`} 
+                            required 
+                        />
+                        {errors.valuePerformed && <p className="mt-1 text-sm text-red-600">{errors.valuePerformed}</p>}
                     </div>
-                    <div>
-                      <label htmlFor="qtyPaid" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{fieldLabels.qtyPaid}</label>
-                      <input type="number" id="qtyPaid" name="qtyPaid" value={formData.qtyPaid} onChange={handleChange} className={`${commonInputClass} ${errors.qtyPaid ? errorInputClass : ''}`} required min="0" />
-                      {errors.qtyPaid && <p className="mt-1 text-sm text-red-600">{errors.qtyPaid}</p>}
-                    </div>
-                </div>
-            </div>
 
-            <div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white border-t border-gray-200 dark:border-gray-700 pt-4">
-                    Valores (R$)
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
-                    <div>
-                      <label htmlFor="valuePerformed" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{fieldLabels.valuePerformed}</label>
-                      <input type="text" inputMode="decimal" id="valuePerformed" name="valuePerformed" value={formatCurrencyForDisplay(formData.valuePerformed)} onChange={handleChange} className={`${commonInputClass} ${errors.valuePerformed ? errorInputClass : ''}`} required />
-                      {errors.valuePerformed && <p className="mt-1 text-sm text-red-600">{errors.valuePerformed}</p>}
-                    </div>
-                    <div>
-                      <label htmlFor="valueBilled" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{fieldLabels.valueBilled}</label>
-                      <input type="text" inputMode="decimal" id="valueBilled" name="valueBilled" value={formatCurrencyForDisplay(formData.valueBilled)} onChange={handleChange} className={`${commonInputClass} ${errors.valueBilled ? errorInputClass : ''}`} required />
-                      {errors.valueBilled && <p className="mt-1 text-sm text-red-600">{errors.valueBilled}</p>}
-                    </div>
-                    <div>
-                      <label htmlFor="valuePaid" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{fieldLabels.valuePaid}</label>
-                      <input type="text" inputMode="decimal" id="valuePaid" name="valuePaid" value={formatCurrencyForDisplay(formData.valuePaid)} onChange={handleChange} className={`${commonInputClass} ${errors.valuePaid ? errorInputClass : ''}`} required />
-                      {errors.valuePaid && <p className="mt-1 text-sm text-red-600">{errors.valuePaid}</p>}
+                    <div className="flex flex-col space-y-3 pt-6 md:pt-1">
+                        <label className={`flex items-center space-x-3 p-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 transition-colors ${!canEditStatus ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600'}`}>
+                            <input 
+                                type="checkbox" 
+                                checked={isBilled} 
+                                onChange={(e) => setIsBilled(e.target.checked)}
+                                disabled={!canEditStatus}
+                                className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            />
+                            <div className="flex flex-col">
+                                <span className="font-medium text-gray-900 dark:text-white">Faturado</span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400">Marcar se já foi enviado para faturamento</span>
+                            </div>
+                        </label>
+
+                        <label className={`flex items-center space-x-3 p-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 transition-colors ${!canEditStatus ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600'}`}>
+                            <input 
+                                type="checkbox" 
+                                checked={isPaid} 
+                                onChange={(e) => setIsPaid(e.target.checked)}
+                                disabled={!canEditStatus}
+                                className="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                            />
+                            <div className="flex flex-col">
+                                <span className="font-medium text-gray-900 dark:text-white">Pago</span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400">Marcar se o pagamento já foi recebido</span>
+                            </div>
+                        </label>
                     </div>
                 </div>
+                
+                <p className="text-xs text-gray-500 mt-4 italic">* A quantidade realizada será registrada automaticamente como 1.</p>
+                {!canEditStatus && (
+                    <p className="text-xs text-orange-500 mt-2 font-medium">
+                        * Apenas administradores e faturamento podem alterar o status de pagamento.
+                    </p>
+                )}
             </div>
           </div>
 
